@@ -43,8 +43,7 @@ return [
                  yii\bootstrap\BootstrapAsset::class => false
              ]
          ]
-        */
-        
+        */        
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
