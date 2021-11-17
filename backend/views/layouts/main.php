@@ -51,7 +51,7 @@ AppAsset::register($this);
 
             <!-- Nav Item - Charts -->
             <li class="nav-item">
-                <a class="nav-link" href="charts.html">
+                <a class="nav-link" href="<?php  echo yii\helpers\Url::to(['/product/index'])?>">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Products</span></a>
             </li>
@@ -283,8 +283,11 @@ AppAsset::register($this);
 
                 </nav>
                 <!-- End of Topbar -->
+                <div class="p-4">
 
-                <?php echo $content ?>
+                    <?php echo $content ?>
+
+                </div>
                 
             </div>
 
@@ -326,7 +329,9 @@ AppAsset::register($this);
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a data-method="post" class="btn btn-primary" href="<?php echo yii\helpers\Url::to(['/site/logout'])?>">Logout</a>
+                    <a data-method="post" 
+                    class="btn btn-primary"
+                     href="<?php echo yii\helpers\Url::to(['/site/logout'])?>">Logout</a>
                 </div>
             </div>
         </div>
