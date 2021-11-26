@@ -25,7 +25,13 @@ class CartController extends  \frontend\base\controller
              'formats' => [
                 'application/json' => yii\web\Response::FORMAT_JSON,
             ],
-         ]
+        ],
+        [
+              'class' => 'yii\filters\VerbFilter',
+              'actions' => [
+                  'delete' => ['POST','DELETE'],
+              ]
+        ]
         ];
     }
 
