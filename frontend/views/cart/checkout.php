@@ -8,14 +8,20 @@
 
  use yii\bootstrap4\ActiveForm;
  use yii\helpers\Html;
+ use yii\helpers\Url;
  ?>
-<?php $form = ActiveForm::begin([
-    'action' => [' ']
-])?>
+
+
+ <script
+    src="https://www.paypal.com/sdk/js?client-id=Ac0eGsFMRhxFA1hZjbK5suCphGOe8daew-3m0DIu0hx4JY3obwAPFfyzA6aGNMrFN4F1dfEC4uvZXHSC"> // Required. Replace YOUR_CLIENT_ID with your sandbox client ID.
+  </script>
 
 <div class="row">
 
     <div class="col">
+        <?php $form = ActiveForm::begin([
+            'id' => 'checkout-form',
+            ])?>
            <div class="card mb-3">
                <div class="card-header">
                  <h5>  Account Information</h5>
@@ -49,6 +55,8 @@
     </div>
 </div>
 
+<?php $form = ActiveForm::end()?>
+
 <div class="col">
     <div class="card">
         <div class="card-header">
@@ -64,9 +72,12 @@
                     <td class='text-right'><?= Yii::$app->formatter->asCurrency($totalPrice) ?></td>
                 </tr>
             </table>
-            <p class="text-right mt-3">
+
+             <div id="paypal-button-container"></div>
+
+            <!-- <p class="text-right mt-3">
                  <button class="btn btn-secondary">Checkout</button>
-            </p>
+            </p> -->
         </div>
     </div>
 </div>
@@ -74,4 +85,48 @@
 </div>
 
 
-<?php $form = ActiveForm::end()?>
+
+<script>
+    paypal.Buttons({
+         createOrder: function(data, actions) {
+      // This function sets up the details of the transaction, including the amount and line item details.
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: <?php echo $totalPrice ?>
+          }
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+        console.log(data , actions);
+      // This function captures the funds from the transaction.
+      return actions.order.capture().then(function(details) {
+        
+        const $form = $('#checkout-form');
+        let data = [];
+         data = $form.serializeArray();
+       
+        data.push({
+            name : 'transactionId',
+            value : details.id
+        });
+        data.push({
+            name : 'status',
+            value : details.status
+        });
+        $.ajax({
+            method : 'post',
+            url : '<?php echo Url::to(['/cart/create-order'])?>',
+            data : data ,
+            success: function(response){
+                console.log(response);
+            }
+        })
+        // This function shows a transaction success message to your buyer.
+        alert('Transaction completed by ' + details.payer.name.given_name);
+      });
+    }
+    }).render('#paypal-button-container');
+    // This function displays Smart Payment Buttons on your web page.
+  </script>

@@ -32,6 +32,7 @@ class CartController extends  \frontend\base\controller
               'class' => 'yii\filters\VerbFilter',
               'actions' => [
                   'delete' => ['POST','DELETE'],
+                  'create-order' => ['POST'],
               ]
         ]
         ];
@@ -241,5 +242,14 @@ class CartController extends  \frontend\base\controller
                 'totalPrice' => $totalPrice                
             ]);
 
+         }
+
+         public function actionCreateOrder(){
+
+            $transactionId = Yii::$app->request->post('transactionId');
+            $status = Yii::$app->request->post('status');            
+            // echo '<pre>';
+            // var_dump(Yii::$app->request->post());
+            // echo '<pre>';
          }
 }
