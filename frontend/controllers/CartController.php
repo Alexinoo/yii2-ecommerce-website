@@ -177,6 +177,37 @@ class CartController extends  \frontend\base\controller
 
         public function actionChangeQuantity(){
    
+            $id = Yii::$app->request->post('id');
+            $quantity = Yii::$app->request->post('quantity');
 
+            $product = Product::find()->id($id)->published()->one();
+
+            if(!$product){
+                throw new \yii\web\NotFoundHttpException('Product doesnt exist');
+            }
+
+            if(isGuest()){
+            // get items from the session
+                $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
+                
+                // iterate and delete the id that matches
+                foreach($cartItems as &$cartItem){
+                    if( $cartItem['id'] == $id ){
+                      $cartItem['quantity'] =   $quantity;
+                      break;
+                    }
+                }
+                Yii::$app->session->set(CartItem::SESSION_KEY ,  $cartItems);
+            }else{
+
+                   $cartItem = CartItem::find()->userId(currUserId())->productId( $id)->one();
+
+                   if($cartItem){
+
+                         $cartItem->quantity = $quantity;
+                        $cartItem->save();
+                   }
+            }
+            return CartItem::getTotalQuantityForUser(currUserId());
         }
 }

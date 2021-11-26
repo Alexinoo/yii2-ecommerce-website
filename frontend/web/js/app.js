@@ -40,11 +40,11 @@ $itemQuantities.change(function(e){
         method : 'post',
         url : $url,
         data :{
-            id : id ,
+            id : $id ,
             quantity : $this.val()
         } ,
-        success : function(){
-            console.log(arguments);
+        success : function(totalQuantity){
+           $cartQuantity.text(totalQuantity);
         }
     })
 

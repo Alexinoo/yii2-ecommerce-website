@@ -12,27 +12,8 @@ class Controller extends \yii\web\Controller
 {
     public function beforeAction($action){
 
-        // Get items if the user is not authorized
-        if(Yii::$app->user->isGuest){
-            $cartItems = Yii::$app->session->get(CartItem::SESSION_KEY , []);
-            $sum = 0;
-
-            foreach( $cartItems as $cartItem){
-
-                $sum+=$cartItem['quantity'];
-            }
-        }
-
-        else{
-              $sum =  CartItem::findBySql("
-        SELECT SUM(quantity)
-        FROM CART_ITEMS 
-        WHERE user_id = :userId ",[ 'userId'  => Yii::$app->user->id ])
-        ->scalar();
-        }     
-
-        // Forward to layout
-         $this->view->params['cartItemCount'] = $sum;
+         // Forward to layout
+         $this->view->params['cartItemCount'] = CartItem::getTotalQuantityForUser( currUserId() );
 
         return  parent::beforeAction($action);
     }
