@@ -38,6 +38,7 @@ class CartController extends  \frontend\base\controller
         // if the user is not authorized
         if( Yii::$app->user->isGuest){
             // Get the items from session
+               $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
         }else{
 
               // Get the items from the db
@@ -74,8 +75,39 @@ class CartController extends  \frontend\base\controller
             throw new \yii\web\NotFoundHttpException('Product doesnt exist');
         }
 
-        if(Yii::$app->user->isGuest){
-            // if user is not authorized , save in session
+
+    // if user is not authorized , save in session
+        if(Yii::$app->user->isGuest){        
+          
+            //   Check if there is anything in the session , if not return an empty array
+            $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
+
+            // check if there is any item in the session - increase quantity - Avoids duplicate - &$cartItem reference
+            $found = false;
+            foreach(  $cartItems as  &$cartItem){
+                if ( $cartItem['id' ]==  $id ){
+                    $cartItem['quantity' ]++;
+                    $found = true;
+                    break;
+                }
+            }
+
+            // if not found , create the product afresh
+            if(!$found){
+                  // Save in an array
+              $cartItem = [
+                  'id' => $id ,
+                  'name' => $product->name,
+                  'image' =>  $product->image,
+                  'price' =>  $product->price ,
+                  'quantity' => 1 ,
+                  'total_price' => $product->price
+              ];              
+             $cartItems[] =  $cartItem;
+            }
+
+            //  save in Local session
+            Yii::$app->session->set(CartItem::SESSION_KEY ,   $cartItems);
 
         }else{
 
