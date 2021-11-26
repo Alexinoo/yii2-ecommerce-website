@@ -144,6 +144,29 @@ class CartController extends  \frontend\base\controller
 
 
     }
-  
+
+    public function actionDelete($id){
+
+        if( isGuest() ){
+        // get items from the session
+        $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
+        
+        // iterate and delete the id that matches
+        foreach($cartItems as $i=> $cartItem){
+            if( $cartItem['id'] == $id ){
+                // array_splice - Modifies , takes in array , position and no of items to remove
+                array_splice($cartItems , $i , 1);
+                // break;
+            }
+        }
+         Yii::$app->session->set(CartItem::SESSION_KEY ,  $cartItems);
+
+        }else{
+            // delete from db
+           CartItem::deleteAll(['product_id' => $id , 'user_id' => currUserId()]);
+        }
+
+        return $this->redirect(['index']);
+    }
    
 }
