@@ -39,7 +39,7 @@ use common\models\Product;
                      alt="<?= $item['name'] ?>">
                     </td>
                 <td><?= $item['price'] ?></td>
-                <td><input type="number" value="<?= $item['quantity'] ?>" class="form-control item-quantity" style="width:60px"></td>
+                <td><input type="number" min="1" value="<?= $item['quantity'] ?>" class="form-control item-quantity" style="width:60px"></td>
                 <td><?= $item['total_price'] ?></td>
                 <td><?= Html::a('Delete' ,['/cart/delete', 'id' => $item['id']],[
                     'class' => 'btn btn-outline-danger btn-sm',
