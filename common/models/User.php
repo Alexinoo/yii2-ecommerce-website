@@ -13,6 +13,8 @@ use yii\web\IdentityInterface;
  *
  * @property integer $id
  * @property string $username
+ * @property string $firstname
+ * @property string $lastname
  * @property string $password_hash
  * @property string $password_reset_token
  * @property string $verification_token
@@ -22,12 +24,16 @@ use yii\web\IdentityInterface;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
+ * @property \common\models\UserAdress[] $addresses
  */
 class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_DELETED = 0;
     const STATUS_INACTIVE = 9;
     const STATUS_ACTIVE = 10;
+
+    public  $password;
+    public  $passwordConfirm;
 
 
     /**
@@ -54,6 +60,8 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
+            [[ 'firstname','lastname','username','email'],'required' ],
+            [[ 'firstname','lastname','username','email'],'string','max' => 255],
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
         ];
@@ -212,6 +220,19 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     public function getDisplayName(){
-        return $this->username;
+
+        $fullName = trim($this->firstname.' '.$this->lastname);
+        return   $fullName ?  $fullName : $this->username;
+    }
+
+    public function getAddresses(){
+        return   $this->hasMany( UserAdress::class ,['user_id' => 'id']);
+    }
+
+      public function getAddress(){
+
+       $address =  $this->addresses[0] ?? new UserAdress();
+       $address->user_id = $this->id;
+       return $address;
     }
 }

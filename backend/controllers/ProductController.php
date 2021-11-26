@@ -2,11 +2,13 @@
 
 namespace backend\controllers;
 
+use Yii;
 use common\models\Product;
 use backend\models\search\ProductSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * ProductController implements the CRUD actions for Product model.
@@ -37,10 +39,12 @@ class ProductController extends Controller
      */
     public function actionIndex()
     {
+        $model = new Product();
         $searchModel = new ProductSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
+            'model' => $model,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -67,18 +71,31 @@ class ProductController extends Controller
     public function actionCreate()
     {
         $model = new Product();
+        
+        if ($model->load(Yii::$app->request->post()) && $model->save() ) {   
+            
+                $model->save();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
+                $imageID = $model->id;
+
+                $image = UploadedFile::getInstance($model, 'imageFile');
+
+                $imgName ='img_'. $imageID.'.'.$image->getExtension();
+
+                $image->saveAs(Yii::getAlias('@ImgPath').'/'.$imgName);
+
+                $model->image =   $imgName;
+
+                 $model->save();
+
+
+         return $this->redirect(['view', 'id' => $model->id]);
+
         } else {
-            $model->loadDefaultValues();
-        }
-
         return $this->render('create', [
             'model' => $model,
         ]);
+        }
     }
 
     /**

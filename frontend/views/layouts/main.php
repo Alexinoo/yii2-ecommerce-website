@@ -10,6 +10,8 @@ use yii\bootstrap4\Html;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
 
+$cartItemCount = $this->params['cartItemCount'];
+
 AppAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
@@ -35,25 +37,40 @@ AppAsset::register($this);
         ],
     ]);
     $menuItems = [
-        ['label' => 'Home', 'url' => ['/site/index']],
-        ['label' => 'About', 'url' => ['/site/about']],
-        ['label' => 'Contact', 'url' => ['/site/contact']],
+        [
+            'label' => 'Cart <span id="cart-quantity" class="badge bg-danger">'.$cartItemCount.'</span>',
+             'url' => ['/cart/index'] ,
+             'encode' => false
+            ],
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
         $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
     } else {
-        $menuItems[] = '<li>'
-            . Html::beginForm(['/site/logout'], 'post', ['class' => 'form-inline'])
-            . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
-                ['class' => 'btn btn-link logout']
-            )
-            . Html::endForm()
-            . '</li>';
+          $menuItems[] = [
+              'label' => Yii::$app->user->identity->getDisplayName(), 
+                // 'dropDownOptions' => [
+                //                  'class' => 'dropdown-menu-right'
+                //              ]  ,
+              'items' => [
+                        [
+                            'label' => 'Profile',                            
+                             'url' => ['/profile/index'] ,
+                                                     
+                            ],
+                        [
+                            'label' => 'Logout',                            
+                             'url' => ['/site/logout'] ,
+                               'linkOptions' => [
+                                     'data-method' => 'post'
+                               ],
+                        ]
+              ]
+            
+            ];
     }
     echo Nav::widget([
-        'options' => ['class' => 'navbar-nav'],
+        'options' => ['class' => 'navbar-nav ml-auto'],
         'items' => $menuItems,
     ]);
     NavBar::end();
@@ -61,10 +78,7 @@ AppAsset::register($this);
 </header>
 
 <main role="main" class="flex-shrink-0">
-    <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
+    <div class="container">       
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>

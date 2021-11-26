@@ -11,16 +11,17 @@ use dosamigos\ckeditor\CKEditor;
 
 <div class="product-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form =
+     ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'description')->widget(CKEditor::className(), [
-        'options' => ['rows' => 4],
+        'options' => ['rows' => 1],
         'preset' => 'basic'
     ]) ?>
     
-    <?= $form->field($model, 'image' , [
+    <?= $form->field($model, 'imageFile' , [
         'template' => '
                 <div class="custom-file">
                  {input}
@@ -30,7 +31,7 @@ use dosamigos\ckeditor\CKEditor;
         ',
         'labelOptions'=>  ['class' => 'custom-file-label'] ,
         'inputOptions' => ['class' => 'custom-file-input']
-    ])->fileInput() ?>
+    ])->fileInput(['type'=>'file']) ?>
 
     <?= $form->field($model, 'price')->textInput([
                     'maxlength' => true,
