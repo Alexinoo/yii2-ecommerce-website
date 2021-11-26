@@ -72,8 +72,15 @@ class CartItem extends \yii\db\ActiveRecord
     }
 
     public static function getItemsForUser($currUserId){
+
+         // if the user is not authorized
+        if( Yii::$app->user->isGuest){
+            // Get the items from session
+               $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
+        }else{
+             // Get the items from the db
       
-        return  CartItem::findBySql("
+        $cartItems =  CartItem::findBySql("
                         SELECT
                             c.product_id as id , 
                             p.image ,
@@ -88,6 +95,18 @@ class CartItem extends \yii\db\ActiveRecord
                         ['userId' => $currUserId])
                         ->asArray()
                         ->all();
+        }
+        return   $cartItems;
+
+    }
+
+     public static function clearCartItems($currUserId){
+
+        if(isGuest()){
+            Yii::$app->session->remove(CartItem::SESSION_KEY);
+        }else{
+            CartItem::deleteAll(['user_id' => $currUserId]);
+        }
 
     }
 
@@ -145,7 +164,5 @@ class CartItem extends \yii\db\ActiveRecord
     {
         return new \common\models\query\CartItemQuery(get_called_class());
     }
-
-
    
 }

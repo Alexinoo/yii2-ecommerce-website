@@ -120,11 +120,13 @@
             url : '<?php echo Url::to(['/cart/create-order'])?>',
             data : data ,
             success: function(response){
-                console.log(response);
+                 // This function shows a transaction success message to your buyer.
+            alert('Transaction completed:' + details.payer.name.given_name);
+            // Redirect to the homepage
+            window.location.href = ' ';
             }
         })
-        // This function shows a transaction success message to your buyer.
-        alert('Transaction completed by ' + details.payer.name.given_name);
+       
       });
     }
     }).render('#paypal-button-container');

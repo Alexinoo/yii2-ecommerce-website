@@ -3,6 +3,7 @@
 namespace frontend\controllers;
 use Yii;
 use yii\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\CartItem;
@@ -23,7 +24,7 @@ class CartController extends  \frontend\base\controller
         return [
          [
              'class' => 'yii\filters\ContentNegotiator',
-             'only' => ['add'] ,
+             'only' => ['add','create-order'] ,
              'formats' => [
                 'application/json' => yii\web\Response::FORMAT_JSON,
             ],
@@ -42,18 +43,10 @@ class CartController extends  \frontend\base\controller
      * {@inheritdoc}
      */   
     
-    public function actionIndex(){
+    public function actionIndex(){       
 
-        // if the user is not authorized
-        if( Yii::$app->user->isGuest){
-            // Get the items from session
-               $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
-        }else{
-
-              // Get the items from the db
+        // Get the items from the db
            $cartItems = CartItem::getItemsForUser(currUserId());
-
-        }
      
         return $this->render('index',[
             'items' => $cartItems,
@@ -202,6 +195,11 @@ class CartController extends  \frontend\base\controller
 
          public function actionCheckout(){
 
+            $cartItems = CartItem::getItemsForUser(currUserId());
+
+            if( empty($cartItems) ){
+                return $this->redirect([Yii::$app->homeUrl]);
+            }
            
             $order = new Order();
             $orderAddress =  new OrderAdress();
@@ -224,13 +222,9 @@ class CartController extends  \frontend\base\controller
                 $orderAddress->state = $userAddress->state;
                 $orderAddress->country = $userAddress->country;
                 $orderAddress->zipcode = $userAddress->zipcode;
-                $cartItems = CartItem::getItemsForUser(currUserId());
-            }else{
-
-                $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
-
             }
 
+         
             $productQuantity = CartItem::getTotalQuantityForUser(currUserId());
             $totalPrice = CartItem::getTotalPriceForUser(currUserId());
 
@@ -251,5 +245,42 @@ class CartController extends  \frontend\base\controller
             // echo '<pre>';
             // var_dump(Yii::$app->request->post());
             // echo '<pre>';
+           $totalPrice =  CartItem::getTotalPriceForUser(currUserId());
+           
+           if( $totalPrice == null){
+                throw new BadRequestHttpException();
+           }
+            $order = new Order();
+            $order->transaction_id = $transactionId ;
+            $order->total_price = $totalPrice;
+            $order->status = $status == 'COMPLETED' ? Order::STATUS_COMPLETED : Order::STATUS_FAILED;
+
+             $order->created_at = time();
+             $order->created_by =currUserId();
+
+            $transaction = Yii::$app->db->beginTransaction();
+
+            if($order->load(Yii::$app->request->post())
+             && $order->save()
+             &&  $order->saveAddress(Yii::$app->request->post() )
+              && $order->saveOrderItems()){
+
+              $transaction->commit();
+
+              CartItem::clearCartItems(currUserId());
+
+            //   todo Send Email to the Admin
+
+                    return [
+                        'success' => true ,
+                    ];
+
+            }else{
+                  $transaction->rollBack();
+                     return [
+                        'success' => false,
+                        'errors' => $order->errors
+                    ];
+                }
          }
 }
