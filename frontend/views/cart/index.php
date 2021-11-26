@@ -1,6 +1,8 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
+use common\models\Product;
 
 /** 
  *@var array $items 
@@ -28,16 +30,16 @@ use yii\helpers\Html;
     </thead>
     <tbody>
         <?php foreach( $items as $item) { ?>
-            <tr>
+            <tr data-id="<?= $item['id'] ?>" data-url="<?= Url::to(['/cart/change-quantity']) ?>">
                 <td><?= $item['name'] ?></td>
                 <td> 
                     <img
-                     src="<?= \common\models\Product::formatImageUrl($item['image'] )?>"
+                     src="<?= Product::formatImageUrl($item['image'] )?>"
                      style="width:70px"
                      alt="<?= $item['name'] ?>">
                     </td>
                 <td><?= $item['price'] ?></td>
-                <td><input type="number" value="<?= $item['quantity'] ?>" class="form-control" style="width:60px"></td>
+                <td><input type="number" value="<?= $item['quantity'] ?>" class="form-control item-quantity" style="width:60px"></td>
                 <td><?= $item['total_price'] ?></td>
                 <td><?= Html::a('Delete' ,['/cart/delete', 'id' => $item['id']],[
                     'class' => 'btn btn-outline-danger btn-sm',

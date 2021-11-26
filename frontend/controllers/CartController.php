@@ -90,9 +90,9 @@ class CartController extends  \frontend\base\controller
 
             // check if there is any item in the session - increase quantity - Avoids duplicate - &$cartItem reference
             $found = false;
-            foreach(  $cartItems as  &$cartItem){
-                if ( $cartItem['id' ]==  $id ){
-                    $cartItem['quantity' ]++;
+            foreach(  $cartItems as  &$item){
+                if ( $item['id' ]==  $id ){
+                   $item['quantity' ]++;
                     $found = true;
                     break;
                 }
@@ -174,5 +174,9 @@ class CartController extends  \frontend\base\controller
 
         return $this->redirect(['index']);
     }
+
+        public function actionChangeQuantity(){
    
+
+        }
 }

@@ -2,6 +2,8 @@ $(document).ready(function(){
 
 const $cartQuantity  = $('#cart-quantity');
 
+const $itemQuantities = $('.item-quantity');
+
 $('.add-to-cart-btn').click(function(e){
 
     e.preventDefault();
@@ -24,6 +26,28 @@ $('.add-to-cart-btn').click(function(e){
             console.log(error);
         }
     });
+})
+
+$itemQuantities.change(function(e){
+
+    const $this = $(e.target);
+    const $tr = $this.closest('tr')
+    
+    const $id = $tr.data('id');
+    const $url = $tr.data('url');
+
+    $.ajax({
+        method : 'post',
+        url : $url,
+        data :{
+            id : id ,
+            quantity : $this.val()
+        } ,
+        success : function(){
+            console.log(arguments);
+        }
+    })
+
 })
 
 })
