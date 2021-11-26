@@ -37,7 +37,7 @@ use yii\helpers\Html;
                      alt="<?= $item['name'] ?>">
                     </td>
                 <td><?= $item['price'] ?></td>
-                <td><?= $item['quantity'] ?></td>
+                <td><input type="number" value="<?= $item['quantity'] ?>" class="form-control" style="width:60px"></td>
                 <td><?= $item['total_price'] ?></td>
                 <td><?= Html::a('Delete' ,['/cart/delete', 'id' => $item['id']],[
                     'class' => 'btn btn-outline-danger btn-sm',
