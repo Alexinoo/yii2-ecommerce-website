@@ -23,6 +23,7 @@ use Yii;
  */
 class Order extends \yii\db\ActiveRecord
 {
+    CONST STATUS_DRAFT = 0;
     /**
      * {@inheritdoc}
      */

@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use common\models\Order;
 
 /**
  * This is the model class for table "{{%order_adresses}}".
@@ -15,7 +16,7 @@ use Yii;
  * @property string $country
  * @property string $zipcode
  *
- * @property Orders $order
+ * @property Order $order
  */
 class OrderAdress extends \yii\db\ActiveRecord
 {
@@ -36,7 +37,7 @@ class OrderAdress extends \yii\db\ActiveRecord
             [['order_id', 'adresses', 'city', 'state', 'country', 'zipcode'], 'required'],
             [['order_id'], 'integer'],
             [['adresses', 'city', 'state', 'country', 'zipcode'], 'string', 'max' => 255],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Orders::className(), 'targetAttribute' => ['order_id' => 'id']],
+            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::className(), 'targetAttribute' => ['order_id' => 'id']],
         ];
     }
 
@@ -59,11 +60,11 @@ class OrderAdress extends \yii\db\ActiveRecord
     /**
      * Gets query for [[Order]].
      *
-     * @return \yii\db\ActiveQuery|\common\models\query\OrdersQuery
+     * @return \yii\db\ActiveQuery|\common\models\query\OrderQuery
      */
     public function getOrder()
     {
-        return $this->hasOne(Orders::className(), ['id' => 'order_id']);
+        return $this->hasOne(Order::className(), ['id' => 'order_id']);
     }
 
     /**

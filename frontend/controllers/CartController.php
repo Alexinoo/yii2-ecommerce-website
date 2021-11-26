@@ -7,6 +7,8 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\CartItem;
 use common\models\Product;
+use common\models\Order;
+use common\models\OrderAdress;
 
 /**
  * Cart controller
@@ -48,21 +50,7 @@ class CartController extends  \frontend\base\controller
         }else{
 
               // Get the items from the db
-           $cartItems = CartItem::findBySql("
-                        SELECT
-                            c.product_id as id , 
-                            p.image ,
-                            p.name ,
-                            p.price ,
-                            c.quantity ,
-                            p.price *  c.quantity as total_price
-                        FROM cart_items c
-                        LEFT JOIN products p 
-                        ON p.id = c.product_id
-                        WHERE c.user_id = :userId" ,
-                        ['userId' => Yii::$app->user->id ])
-                        ->asArray()
-                        ->all();
+           $cartItems = CartItem::getItemsForUser(currUserId());
 
         }
      
@@ -162,7 +150,7 @@ class CartController extends  \frontend\base\controller
             if( $cartItem['id'] == $id ){
                 // array_splice - Modifies , takes in array , position and no of items to remove
                 array_splice($cartItems , $i , 1);
-                // break;
+                break;
             }
         }
          Yii::$app->session->set(CartItem::SESSION_KEY ,  $cartItems);
@@ -210,4 +198,48 @@ class CartController extends  \frontend\base\controller
             }
             return CartItem::getTotalQuantityForUser(currUserId());
         }
+
+         public function actionCheckout(){
+
+           
+            $order = new Order();
+            $orderAddress =  new OrderAdress();
+
+            // if user is not guess , retrieve his details
+            if( !isGuest()){  
+
+                $user = Yii::$app->user->identity;
+                $userAddress = $user->getAddress();
+
+                // Assign user details for that corresponding order
+                $order->firstname = $user->firstname; 
+                $order->lastname = $user->lastname; 
+                $order->email = $user->email; 
+                $order->status = Order::STATUS_DRAFT;
+                
+                // Assign user details for that corresponding addresses
+                $orderAddress->adresses = $userAddress->address;
+                $orderAddress->city = $userAddress->city;
+                $orderAddress->state = $userAddress->state;
+                $orderAddress->country = $userAddress->country;
+                $orderAddress->zipcode = $userAddress->zipcode;
+                $cartItems = CartItem::getItemsForUser(currUserId());
+            }else{
+
+                $cartItems =  Yii::$app->session->get(CartItem::SESSION_KEY , []);
+
+            }
+
+            $productQuantity = CartItem::getTotalQuantityForUser(currUserId());
+            $totalPrice = CartItem::getTotalPriceForUser(currUserId());
+
+            return $this->render('checkout',[
+                'order' => $order ,
+                'orderAddress' => $orderAddress,
+                'cartItems' =>$cartItems ,
+                'productQuantity' => $productQuantity ,
+                'totalPrice' => $totalPrice                
+            ]);
+
+         }
 }
