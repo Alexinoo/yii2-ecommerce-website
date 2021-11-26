@@ -16,9 +16,9 @@
 <div class="row">
 
     <div class="col">
-           <div class="card">
+           <div class="card mb-3">
                <div class="card-header">
-                   Account Information
+                 <h5>  Account Information</h5>
                </div>
                <div class="card-body">
                          <div class="row">
@@ -52,25 +52,26 @@
 <div class="col">
     <div class="card">
         <div class="card-header">
-            <h4> Order Summary </h4>
+            <h5> Order Summary </h5>
         </div>
         <div class="card-body">
             <table class="table">
                 <tr>
-                    <td> <?= $productQuantity ?> Products</td>
+                    <td colspan="2"> <?= $productQuantity ?> Products</td>
                 </tr>
                 <tr>
                     <td> Total Price</td>
                     <td class='text-right'><?= Yii::$app->formatter->asCurrency($totalPrice) ?></td>
                 </tr>
             </table>
+            <p class="text-right mt-3">
+                 <button class="btn btn-secondary">Checkout</button>
+            </p>
         </div>
     </div>
 </div>
 
 </div>
-<p class="text-right mt-3">
-    <button class="btn btn-success">Continue</button>
-</p>
+
 
 <?php $form = ActiveForm::end()?>
