@@ -277,8 +277,14 @@ class CartController extends  \frontend\base\controller
             }
 
             $order->transaction_id = Yii::$app->request->post('transactionId');
-            $status = Yii::$app->request->post('status');
+            $orderIDExists = Order::andWhere(['transaction_id' => $order->transaction_id ])->exists();
+            if($orderIDExists){
+                throw new BadRequestHttpException();
+            }
+            // todo  Validate transaction ID - It must not be used and it must be valid transactionID in paypal
 
+
+            $status = Yii::$app->request->post('status');
             $order->status = $status == 'COMPLETED' ? ORDER::STATUS_COMPLETED : ORDER::STATUS_FAILED;
 
           }
