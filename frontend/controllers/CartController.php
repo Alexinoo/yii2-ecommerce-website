@@ -4,6 +4,7 @@ namespace frontend\controllers;
 use Yii;
 use yii\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\CartItem;
@@ -259,6 +260,27 @@ class CartController extends  \frontend\base\controller
                 'totalPrice' => $totalPrice                
             ]);
 
-         }        
+         }     
+         
+          public function actionSubmitPayment($orderId){
+
+            $where = ['id' => $orderId ,'status' => Order::STATUS_DRAFT];
+
+            if( !isGuest()){
+                  $where['created_by'] = currUserId();
+            }
+
+            $order = Order::findOne(  $where);
+
+            if(!$order){
+                throw new NotFoundHttpException();
+            }
+
+            $order->transaction_id = Yii::$app->request->post('transactionId');
+            $status = Yii::$app->request->post('status');
+
+            $order->status = $status == 'COMPLETED' ? ORDER::STATUS_COMPLETED : ORDER::STATUS_FAILED;
+
+          }
        
 }
