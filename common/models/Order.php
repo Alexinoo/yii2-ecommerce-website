@@ -23,7 +23,7 @@ use common\models\CartItem;
  *
  * @property User $createdBy
  * @property OrderAdress[] $OrderAdresses
- * @property OrderItem[] $OrderItems
+ * @property OrderItem[] $orderItems
  */
 class Order extends \yii\db\ActiveRecord
 {
@@ -145,5 +145,15 @@ class Order extends \yii\db\ActiveRecord
         return true;
     }
 
+    public function getItemsQuantity(){
+
+         $sum =  CartItem::findBySql("
+                                                        SELECT SUM(quantity)
+                                                            FROM order_items 
+                                                        WHERE order_id = :orderId ",
+                                                        ['orderId'  => $this->id ])
+                                                         ->scalar();
+        return $sum;
+     }
   
 }

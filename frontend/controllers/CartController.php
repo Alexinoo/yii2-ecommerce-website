@@ -195,13 +195,40 @@ class CartController extends  \frontend\base\controller
 
          public function actionCheckout(){
 
-            $cartItems = CartItem::getItemsForUser(currUserId());
+            $cartItems = CartItem::getItemsForUser(currUserId());            
+            $productQuantity = CartItem::getTotalQuantityForUser(currUserId());
+            $totalPrice = CartItem::getTotalPriceForUser(currUserId());
 
             if( empty($cartItems) ){
                 return $this->redirect([Yii::$app->homeUrl]);
             }
            
             $order = new Order();
+            $order->total_price = $totalPrice;
+            $order->status = Order::STATUS_DRAFT;
+             $order->created_at = time();
+             $order->created_by =currUserId();
+
+            $transaction = Yii::$app->db->beginTransaction();
+
+            if($order->load(Yii::$app->request->post())
+             && $order->save()
+             &&  $order->saveAddress(Yii::$app->request->post() )
+              && $order->saveOrderItems()){
+
+              $transaction->commit();
+
+            // CartItem::clearCartItems(currUserId());
+
+
+             return $this->render('pay-now',[
+                 'order' => $order , 
+                 'orderAddress' => $order->orderAdress[0],
+
+             ]);
+
+            }
+
             $orderAddress =  new OrderAdress();
 
             // if user is not guess , retrieve his details
@@ -224,10 +251,6 @@ class CartController extends  \frontend\base\controller
                 $orderAddress->zipcode = $userAddress->zipcode;
             }
 
-         
-            $productQuantity = CartItem::getTotalQuantityForUser(currUserId());
-            $totalPrice = CartItem::getTotalPriceForUser(currUserId());
-
             return $this->render('checkout',[
                 'order' => $order ,
                 'orderAddress' => $orderAddress,
@@ -236,51 +259,6 @@ class CartController extends  \frontend\base\controller
                 'totalPrice' => $totalPrice                
             ]);
 
-         }
-
-         public function actionCreateOrder(){
-
-            $transactionId = Yii::$app->request->post('transactionId');
-            $status = Yii::$app->request->post('status');            
-            // echo '<pre>';
-            // var_dump(Yii::$app->request->post());
-            // echo '<pre>';
-           $totalPrice =  CartItem::getTotalPriceForUser(currUserId());
-           
-           if( $totalPrice == null){
-                throw new BadRequestHttpException();
-           }
-            $order = new Order();
-            $order->transaction_id = $transactionId ;
-            $order->total_price = $totalPrice;
-            $order->status = $status == 'COMPLETED' ? Order::STATUS_COMPLETED : Order::STATUS_FAILED;
-
-             $order->created_at = time();
-             $order->created_by =currUserId();
-
-            $transaction = Yii::$app->db->beginTransaction();
-
-            if($order->load(Yii::$app->request->post())
-             && $order->save()
-             &&  $order->saveAddress(Yii::$app->request->post() )
-              && $order->saveOrderItems()){
-
-              $transaction->commit();
-
-              CartItem::clearCartItems(currUserId());
-
-            //   todo Send Email to the Admin
-
-                    return [
-                        'success' => true ,
-                    ];
-
-            }else{
-                  $transaction->rollBack();
-                     return [
-                        'success' => false,
-                        'errors' => $order->errors
-                    ];
-                }
-         }
+         }        
+       
 }
