@@ -71,6 +71,34 @@ class CartItem extends \yii\db\ActiveRecord
         return $sum;
     }
 
+         public static function getTotalPriceForItemForUser($productId , $currUserId){
+
+     // Get items if the user is not authorized
+        if( isGuest() ){
+            $cartItems = Yii::$app->session->get(CartItem::SESSION_KEY , []);
+            $sum = 0;
+
+            foreach( $cartItems as $cartItem){
+                if( $cartItem === $productId){
+                $sum+=$cartItem['quantity'] * $cartItem['price'] ;
+                }
+            }
+        }
+        else{
+              $sum =  CartItem::findBySql("
+        SELECT SUM(c.quantity * p.price)
+        FROM CART_ITEMS c , PRODUCTS p
+        WHERE p.id = c.product_id
+        AND c.product_id = :id
+        AND c.user_id = :userId ",
+        [ 'id' => $productId,
+         'userId'  => $currUserId ])
+        ->scalar();
+        }     
+        return $sum;
+    }
+
+
     public static function getItemsForUser($currUserId){
 
          // if the user is not authorized

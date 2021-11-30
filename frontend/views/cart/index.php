@@ -38,9 +38,9 @@ use common\models\Product;
                      style="width:70px"
                      alt="<?= $item['name'] ?>">
                     </td>
-                <td><?= $item['price'] ?></td>
+                <td><?= Yii::$app->formatter->asCurrency($item['price']) ?></td>
                 <td><input type="number" min="1" value="<?= $item['quantity'] ?>" class="form-control item-quantity" style="width:60px"></td>
-                <td><?= $item['total_price'] ?></td>
+                <td><?= Yii::$app->formatter->asCurrency($item['total_price']) ?></td>
                 <td><?= Html::a('Delete' ,['/cart/delete', 'id' => $item['id']],[
                     'class' => 'btn btn-outline-danger btn-sm',
                    'data' => [

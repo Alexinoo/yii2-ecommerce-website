@@ -32,6 +32,7 @@ $itemQuantities.change(function(e){
 
     const $this = $(e.target);
     const $tr = $this.closest('tr')
+    const $td = $this.closest('td')
     
     const $id = $tr.data('id');
     const $url = $tr.data('url');
@@ -43,8 +44,9 @@ $itemQuantities.change(function(e){
             id : $id ,
             quantity : $this.val()
         } ,
-        success : function(totalQuantity){
-           $cartQuantity.text(totalQuantity);
+        success : function(result){
+           $cartQuantity.text(result.quantity);
+           $td.next().text(result.price);
         }
     })
 
