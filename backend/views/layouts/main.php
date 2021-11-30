@@ -55,6 +55,13 @@ AppAsset::register($this);
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Products</span></a>
             </li>
+
+            <!-- Nav Item - Charts -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?php  echo yii\helpers\Url::to(['/order/index'])?>">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Orders</span></a>
+            </li>
       
 
             <!-- Divider -->
