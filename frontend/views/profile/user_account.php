@@ -44,7 +44,7 @@
                         <?= $form->field($user, 'password')->passwordInput() ?>                        
                     </div>
                     <div class="col">
-                        <?= $form->field($user, 'passwordConfirm')->passwordInput() ?>
+                        <?= $form->field($user, 'password_repeat')->passwordInput() ?>
                     </div>
                 </div>
 
