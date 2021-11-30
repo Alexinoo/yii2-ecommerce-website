@@ -1,0 +1,33 @@
+<?php
+
+/** @var  \common\models\Order $order*/
+
+$orderAddress = $order->orderAdress[0];
+?>
+
+Order  #<?php echo $order->id ?>  Summary : 
+
+Account information
+    Firstname : <?php echo $order->firstname ?>
+    Lastname : <?php echo $order->lastname ?>
+    Email : <?php echo $order->email ?>
+
+
+Address information
+    Address : <?php echo $orderAddress->adresses ?>
+    City : <?php echo $orderAddress->city ?>
+    State : <?php echo $orderAddress->state ?>
+    Country : <?php echo $orderAddress->country ?>
+    ZipCode : <?php echo $orderAddress->zipcode ?>
+
+Products
+    Name                Quantity            Price
+<?php foreach( $order->orderItem as $item ): ?>
+
+    <?php echo $item->product_name ?>    <?php  $item->quantity ?>  <?php Yii::$app->formatter->asCurrency($item->quantity * $item->unit_price ) ?>
+
+<?php endforeach; ?>
+
+    Total Items : <?php echo $order->getItemsQuantity()?>
+
+    Total Price : <?php echo Yii::$app->formatter->asCurrency($order->total_price)?>

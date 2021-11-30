@@ -18,6 +18,7 @@ use common\models\CartItem;
  * @property string $lastname
  * @property string $email
  * @property string|null $transaction_id
+ * @property string|null $paypal_order_id
  * @property int|null $created_at
  * @property int|null $created_by
  *
@@ -48,7 +49,7 @@ class Order extends \yii\db\ActiveRecord
             [['total_price'], 'number'],
             [['status', 'created_at', 'created_by'], 'integer'],
             [['firstname', 'lastname'], 'string', 'max' => 45],
-            [['email', 'transaction_id'], 'string', 'max' => 255],
+            [['email', 'transaction_id','paypal_order_id'], 'string', 'max' => 255],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
         ];
     }
@@ -66,6 +67,7 @@ class Order extends \yii\db\ActiveRecord
             'lastname' => 'Lastname',
             'email' => 'Email',
             'transaction_id' => 'Transaction ID',
+            'paypal_order_id' => 'Paypal Order ID',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
         ];
@@ -155,5 +157,37 @@ class Order extends \yii\db\ActiveRecord
                                                          ->scalar();
         return $sum;
      }
+
+       public function sendEmailToVendor(){
+
+          return Yii::$app
+            ->mailer
+            ->compose(
+                ['html' => 'order_completed_vendor-html', 
+                'text' => 'order_completed_vendor-text'],
+                ['order' => $this]
+            )
+            ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name . ' robot'])
+            ->setTo(Yii::$app->params['vendorEmail'])
+            ->setSubject('New order has been made at'. Yii::$app->name)
+            ->send();
+
+       }
+
+       public function sendEmailToCustomer(){
+
+          return Yii::$app
+            ->mailer
+            ->compose(
+                ['html' => 'order_completed_customer-html',
+                 'text' => 'order_completed_customer-text'],
+                ['order' => $this]
+            )
+            ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name . ' robot'])
+            ->setTo($this->email )
+            ->setSubject('Your order is confirmed at '. Yii::$app->name)
+            ->send();
+
+       }
   
 }

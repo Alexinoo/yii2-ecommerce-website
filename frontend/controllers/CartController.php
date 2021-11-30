@@ -1,6 +1,7 @@
 <?php
 
 namespace frontend\controllers;
+
 use Yii;
 use yii\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -11,6 +12,14 @@ use common\models\CartItem;
 use common\models\Product;
 use common\models\Order;
 use common\models\OrderAdress;
+use PayPalCheckoutSdk\Core\SandboxEnvironment;
+use PayPalCheckoutSdk\Core\PayPalHttpClient;
+use PayPalCheckoutSdk\Payments\AuthorizationsGetRequest;
+use Sample\PayPalClient;
+use PayPalCheckoutSdk\Orders\OrdersGetRequest;
+use Sample\CaptureIntentExamples\CreateOrder;
+           
+
 
 /**
  * Cart controller
@@ -25,7 +34,7 @@ class CartController extends  \frontend\base\controller
         return [
          [
              'class' => 'yii\filters\ContentNegotiator',
-             'only' => ['add','create-order'] ,
+             'only' => ['add','create-order','submit-payment'] ,
              'formats' => [
                 'application/json' => yii\web\Response::FORMAT_JSON,
             ],
@@ -61,7 +70,7 @@ class CartController extends  \frontend\base\controller
         $product = Product::find()->id($id)->published()->one();
 
         if(!$product){
-            throw new \yii\web\NotFoundHttpException('Product doesnt exist');
+            throw new NotFoundHttpException('Product doesnt exist');
         }
 
 
@@ -166,7 +175,7 @@ class CartController extends  \frontend\base\controller
             $product = Product::find()->id($id)->published()->one();
 
             if(!$product){
-                throw new \yii\web\NotFoundHttpException('Product doesnt exist');
+                throw new NotFoundHttpException('Product doesnt exist');
             }
 
             if(isGuest()){
@@ -219,12 +228,12 @@ class CartController extends  \frontend\base\controller
 
               $transaction->commit();
 
-            // CartItem::clearCartItems(currUserId());
+            CartItem::clearCartItems(currUserId());
 
 
              return $this->render('pay-now',[
                  'order' => $order , 
-                 'orderAddress' => $order->orderAdress[0],
+                //  'orderAddress' => $order->orderAdress[0],
 
              ]);
 
@@ -270,22 +279,70 @@ class CartController extends  \frontend\base\controller
                   $where['created_by'] = currUserId();
             }
 
-            $order = Order::findOne(  $where);
+            $order = Order::findOne($where);
 
             if(!$order){
-                throw new NotFoundHttpException();
+                throw new NotFoundHttpException('Order does not exist');
             }
 
-            $order->transaction_id = Yii::$app->request->post('transactionId');
-            $orderIDExists = Order::andWhere(['transaction_id' => $order->transaction_id ])->exists();
+            // Get paypal orderId
+             $paypalOrderId = Yii::$app->request->post('orderId');
+
+            $orderIDExists = Order::find()->andWhere(['paypal_order_id' => $paypalOrderId ])->exists();
+
             if($orderIDExists){
                 throw new BadRequestHttpException();
             }
             // todo  Validate transaction ID - It must not be used and it must be valid transactionID in paypal
 
+            $environment = new SandboxEnvironment(Yii::$app->params['paypalClientId'], Yii::$app->params['paypalSecret'] );
+            $client = new PayPalHttpClient($environment);
+            
+            $response = $client->execute(new OrdersGetRequest($paypalOrderId));
+           
+            if( $response->statusCode === 200){
+                   $order->paypal_order_id = $paypalOrderId;
+                    $order->status = $response->result->status == 'COMPLETED' ? ORDER::STATUS_COMPLETED : ORDER::STATUS_FAILED;
+                    
+                $paidAmount = 0;
 
-            $status = Yii::$app->request->post('status');
-            $order->status = $status == 'COMPLETED' ? ORDER::STATUS_COMPLETED : ORDER::STATUS_FAILED;
+                foreach($response->result->purchase_units as $purchase_unit){
+
+                    if ( $purchase_unit ->amount->currency_code = 'USD'){
+                         $paidAmount += $purchase_unit->amount->value;
+                    }
+                }
+
+                if( $paidAmount  ===    $order->total_price && $response->result->status === 'COMPLETED'){
+                    $order->status = ORDER::STATUS_COMPLETED;
+                }
+
+                $order->transaction_id = $response->result->purchase_units[0]->payments->captures[0]->id;
+
+                if($order->save()){
+
+                    if (!$order->sendEmailToVendor() ) {
+
+                        Yii::error("Email to the vendor is not sent");
+                    }
+                    
+                    if(!$order->sendEmailToCustomer()){
+                           
+                        Yii::error("Email to the customer is not sent");
+                    }
+
+                    return [
+                        'success' =>true ,
+                    ];
+
+                }else{
+                    Yii::error("Order was not saved : 
+                                    Data".VarDumper::dumpAsString($order->toArray()).
+                                    '. Errors : '.VarDumper::dumpAsString($order->errors));
+                }
+            }       
+
+            throw new BadRequestHttpException();
 
           }
        
