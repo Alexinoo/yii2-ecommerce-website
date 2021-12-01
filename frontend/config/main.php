@@ -38,13 +38,13 @@ return [
             'errorAction' => 'site/error',
         ],
 
-         'formatter' => [
-            'datetimeFormat' => 'php:d/m/Y H:i',
-             'class' => 'yii\i18n\Formatter',
-             'thousandSeparator' => ',',
-            'decimalSeparator' => '.',
-            'currencyCode' => '$',
-         ],        
+        //  'formatter' => [
+        //     'datetimeFormat' => 'php:d/m/Y H:i',
+        //      'class' => 'yii\i18n\Formatter',
+        //      'thousandSeparator' => ',',
+        //     'decimalSeparator' => '.',
+        //     'currencyCode' => '$',
+        //  ],        
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,

@@ -25,6 +25,9 @@ $this->params['breadcrumbs'][] = $this->title;
         'id' => 'ordersTable',
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'pager' => [
+            'class' => \yii\bootstrap4\LinkPager::class
+        ],
         'columns' => [
             // ['class' => 'yii\grid\SerialColumn'],
            [

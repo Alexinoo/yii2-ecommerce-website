@@ -31,15 +31,30 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'total_price',
-            'status',
+            'total_price:currency',
+           [
+                'attribute' =>  'status',
+                'content' => function($model){
+                    if( $model->status == \common\models\Order::STATUS_COMPLETED){
+                        return HTML::tag('span','Paid',[ 'class' => 'badge badge-success'
+                        ]);
+                    }else if( $model->status == \common\models\Order::STATUS_DRAFT){
+                          return HTML::tag('span','Unpaid',[ 'class' => 'badge badge-secondary'
+                        ]);
+                    }else{
+                          return HTML::tag('span','Failed',[ 'class' => 'badge badge-danger'
+                        ]);
+                    }
+                }
+
+           ],
             'firstname',
             'lastname',
             'email:email',
             'transaction_id',
             'paypal_order_id',
-            'created_at',
-            'created_by',
+            'created_at:datetime',
+            // 'created_by',
         ],
     ]) ?>
     <h4>Address</h4>
@@ -53,5 +68,28 @@ $this->params['breadcrumbs'][] = $this->title;
             'zipcode'
         ],
     ]) ?>
+    <h4>Order Items</h4>
+       <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+           <?php foreach( $model->orderItem as $item): ?>
+             <tr>
+            <td><img src="<?= $item->product->getImageUrl() ?>" alt="" style="width:50px;"></td>
+            <td><?= $item->product_name ?></td>
+            <td><?= $item->quantity ?></td>
+            <td><?= Yii::$app->formatter->asCurrency($item->unit_price) ?></td>
+            <td><?= Yii::$app->formatter->asCurrency($item->quantity * $item->unit_price ) ?></td>
+        </tr>
+        <?php endforeach; ?>
+        </tbody>        
+    </table>    
 
 </div>
